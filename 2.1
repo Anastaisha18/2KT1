@@ -19,17 +19,23 @@ class HuffmanTree:
         self.root = None  # Корень дерева
         self.codes = {}  # Словарь кодов
 
-    def build_tree(self, text):
-        """Построение дерева из текста"""
-        if not text:
+    def build_tree(self, alphabet, text):
+        """Построение дерева для алфавита на основе текста"""
+        if not alphabet or not text:
             return
 
-        # Подсчет частот символов
+        # Подсчет частот только для символов из алфавита
         freq = {}
         for char in text:
-            freq[char] = freq.get(char, 0) + 1
+            if char in alphabet:  # Учитываем только символы из алфавита
+                freq[char] = freq.get(char, 0) + 1
 
-        # Создание узлов для символов
+        # Добавляем символы из алфавита, которых нет в тексте (частота = 0)
+        for char in alphabet:
+            if char not in freq:
+                freq[char] = 0
+
+        # Создание узлов для всех символов алфавита
         nodes = []
         for char, count in freq.items():
             nodes.append(Node(char, count))
@@ -40,8 +46,8 @@ class HuffmanTree:
 
         # Объединение узлов пока не останется один корень
         while len(nodes) > 1:
-            left = heapq.heappop(nodes)  # Самый редкий
-            right = heapq.heappop(nodes)  # Второй по редкости
+            left = heapq.heappop(nodes)  # Минимальный узел
+            right = heapq.heappop(nodes)  # Следующий минимальный
 
             parent = Node(freq=left.freq + right.freq)
             parent.left = left
@@ -49,7 +55,7 @@ class HuffmanTree:
 
             heapq.heappush(nodes, parent)
 
-        self.root = nodes[0] if nodes else None # корень деерева
+        self.root = nodes[0] if nodes else None
         self._generate_codes(self.root, "")
 
     def _generate_codes(self, node, current_code):
@@ -86,11 +92,13 @@ class HuffmanTree:
                 self.print_tree(node.right, level + 1, "R:")
 
     def encode_text(self, text):
-        """Кодирование текста"""
+        """Кодирование текста - каждая буква кодируется отдельно"""
         encoded = ""
         for char in text:
             if char in self.codes:
                 encoded += self.codes[char]
+            else:
+                print(f"Предупреждение: символ '{char}' не найден в алфавите")
         return encoded
 
     def calculate_bits(self, text):
@@ -98,32 +106,43 @@ class HuffmanTree:
         return len(self.encode_text(text))
 
 
-def run():
-
+def task1():
     # Ввод данных
     alphabet = input("Введите алфавит: ").strip()
     text = input("Введите текст для кодирования: ").strip()
 
-    # Построение дерева
+    # Построение дерева для всего алфавита
     tree = HuffmanTree()
-    tree.build_tree(text)
+    tree.build_tree(alphabet, text)
 
-    # Вывод кодов символов
-    print("\nКоды символов:")
-    for char, code in sorted(tree.codes.items()):
-        print(f"'{char}': {code}")
+    # Вывод кодов для ВСЕХ символов алфавита
+    print("\nКоды для каждой буквы алфавита:")
+    for char in sorted(alphabet):  # Сортируем для удобства чтения
+        if char in tree.codes:
+            print(f"'{char}': {tree.codes[char]}")
+        else:
+            print(f"'{char}': не удалось сгенерировать код")
 
     # Вывод дерева
-    print("\nДерево:")
+    print("\nДЕРЕВО:")
     tree.print_tree()
 
-    # Подсчет и вывод результатов
+    # Кодирование текста и подсчет битов
     total_bits = tree.calculate_bits(text)
     encoded_text = tree.encode_text(text)
-    print(f"\nКоличество битов для кодирования: {total_bits}")
+
+    print(f"\nКоличество битов для кодирования текста: {total_bits}")
+    print(f"Исходный текст: {text}")
     print(f"Закодированный текст: {encoded_text}")
 
+    # Демонстрация кодирования каждой буквы
+    print(f"\nПОБУКВЕННОЕ КОДИРОВАНИЕ:")
+    for char in text:
+        if char in tree.codes:
+            print(f"'{char}' -> {tree.codes[char]}")
+        else:
+            print(f"'{char}' -> символ не в алфавите")
 
-# Запуск первой задачи
+    # Запуск первой задачи
 if __name__ == "__main__":
-    run()
+    task1()
