@@ -1,148 +1,64 @@
+# Класс для узла дерева Хаффмана
 class Node:
-    """Узел дерева Хаффмана"""
-
-    def __init__(self, char=None, freq=0):
-        self.char = char  # Символ (для листьев)
-        self.freq = freq  # Частота
+    def __init__(self, char, freq):
+        self.char = char  # Символ (None для внутренних узлов)
+        self.freq = freq  # Частота символа или сумма частот потомков
         self.left = None  # Левый потомок
         self.right = None  # Правый потомок
 
-    def __lt__(self, other):
-        """Сравнение по частоте для кучи"""
-        return self.freq < other.freq
-
-
 class HuffmanTree:
-    """Дерево Хаффмана для кодирования"""
+    def __init__(self, root):
+        self.root = root  # Корневой узел дерева
 
-    def __init__(self):
-        self.root = None  # Корень дерева
-        self.codes = {}  # Словарь кодов
+    def print_tree(self):
+        self.print_codes(self.root, '')  # Печать кодов Хаффмана
 
-    def build_tree(self, alphabet, text):
-        """Построение дерева для алфавита на основе текста"""
-        if not alphabet or not text:
-            return
-
-        # Подсчет частот только для символов из алфавита
-        freq = {}
-        for char in text:
-            if char in alphabet:  # Учитываем только символы из алфавита
-                freq[char] = freq.get(char, 0) + 1
-
-        # Добавляем символы из алфавита, которых нет в тексте (частота = 0)
-        for char in alphabet:
-            if char not in freq:
-                freq[char] = 0
-
-        # Создание узлов для всех символов алфавита
-        nodes = []
-        for char, count in freq.items():
-            nodes.append(Node(char, count))
-
-        # Построение дерева с помощью кучи
-        import heapq
-        heapq.heapify(nodes)
-
-        # Объединение узлов пока не останется один корень
-        while len(nodes) > 1:
-            left = heapq.heappop(nodes)  # Минимальный узел
-            right = heapq.heappop(nodes)  # Следующий минимальный
-
-            parent = Node(freq=left.freq + right.freq)
-            parent.left = left
-            parent.right = right
-
-            heapq.heappush(nodes, parent)
-
-        self.root = nodes[0] if nodes else None
-        self._generate_codes(self.root, "")
-
-    def _generate_codes(self, node, current_code):
-        """Рекурсивная генерация кодов"""
+    def print_codes(self, node, code):
         if node is None:
             return
-
-        # Для листа сохраняем код
         if node.char is not None:
-            self.codes[node.char] = current_code
-            return
+            print(f"'{node.char}': {code}")  # Печать символа и его кода
+        self.print_codes(node.left, code + '0')  # Рекурсивный обход левого поддерева
+        self.print_codes(node.right, code + '1')  # Рекурсивный обход правого поддерева
 
-        # Обход левого (0) и правого (1) поддерева
-        self._generate_codes(node.left, current_code + "0")
-        self._generate_codes(node.right, current_code + "1")
-
-    def print_tree(self, node=None, level=0, prefix="Root:"):
-        """Вывод структуры дерева"""
-        if node is None:
-            node = self.root
-        if node is None:
-            return
-
-        indent = " " * (level * 4)
-        # Вывод листа или внутреннего узла
-        if node.char is not None:
-            print(f"{indent}{prefix} '{node.char}' (частота: {node.freq})")
-        else:
-            print(f"{indent}{prefix} [внутренний узел] (частота: {node.freq})")
-            # Рекурсивный вывод потомков
-            if node.left:
-                self.print_tree(node.left, level + 1, "L:")
-            if node.right:
-                self.print_tree(node.right, level + 1, "R:")
-
-    def encode_text(self, text):
-        """Кодирование текста - каждая буква кодируется отдельно"""
-        encoded = ""
-        for char in text:
-            if char in self.codes:
-                encoded += self.codes[char]
+    def print_tre(self, node, h):
+        if node:
+            self.print_tre(node.right, h+1)  # Рекурсивный обход правого поддерева
+            for i in range(1, h+1):
+                print('    ', end='')  # Добавление отступов для визуализации уровня
+            if node.char is not None:
+                print(f"'{node.char}':{node.freq}")  # Печать листового узла
             else:
-                print(f"Предупреждение: символ '{char}' не найден в алфавите")
-        return encoded
+                print(node.freq)  # Печать внутреннего узла
+            self.print_tre(node.left, h+1)  # Рекурсивный обход левого поддерева
 
-    def calculate_bits(self, text):
-        """Подсчет битов для кодирования"""
-        return len(self.encode_text(text))
-
-
-def task1():
-    # Ввод данных
-    alphabet = input("Введите алфавит: ").strip()
-    text = input("Введите текст для кодирования: ").strip()
-
-    # Построение дерева для всего алфавита
-    tree = HuffmanTree()
-    tree.build_tree(alphabet, text)
-
-    # Вывод кодов для ВСЕХ символов алфавита
-    print("\nКоды для каждой буквы алфавита:")
-    for char in sorted(alphabet):  # Сортируем для удобства чтения
-        if char in tree.codes:
-            print(f"'{char}': {tree.codes[char]}")
-        else:
-            print(f"'{char}': не удалось сгенерировать код")
-
-    # Вывод дерева
-    print("\nДЕРЕВО:")
-    tree.print_tree()
-
-    # Кодирование текста и подсчет битов
-    total_bits = tree.calculate_bits(text)
-    encoded_text = tree.encode_text(text)
-
-    print(f"\nКоличество битов для кодирования текста: {total_bits}")
-    print(f"Исходный текст: {text}")
-    print(f"Закодированный текст: {encoded_text}")
-
-    # Демонстрация кодирования каждой буквы
-    print(f"\nПОБУКВЕННОЕ КОДИРОВАНИЕ:")
+def build_huffman_tree(text):
+    freq = {}  # Словарь для подсчета частот символов
     for char in text:
-        if char in tree.codes:
-            print(f"'{char}' -> {tree.codes[char]}")
-        else:
-            print(f"'{char}' -> символ не в алфавите")
+        if char != ' ':  # Игнорирование пробелов
+            freq[char] = freq.get(char, 0) + 1  # Увеличение счетчика частоты
 
-    # Запуск первой задачи
-if __name__ == "__main__":
-    task1()
+    nodes = []  # Список для хранения узлов
+    for char, count in freq.items():
+        nodes.append(Node(char, count))  # Создание узлов для каждого символа
+
+    while len(nodes) > 1:  # Пока не останется один узел (корень)
+        for i in range(len(nodes)):
+            for j in range(len(nodes) - 1):
+                if nodes[j].freq > nodes[j + 1].freq:
+                    nodes[j], nodes[j + 1] = nodes[j + 1], nodes[j]  # Сортировка пузырьком
+
+        left = nodes.pop(0)  # Извлечение узла с наименьшей частотой
+        right = nodes.pop(0)  # Извлечение узла со следующей наименьшей частотой
+        parent = Node(None, left.freq + right.freq)  # Создание родительского узла
+        parent.left = left  # Установка левого потомка
+        parent.right = right  # Установка правого потомка
+        nodes.append(parent)  # Добавление родительского узла обратно в список
+
+    return HuffmanTree(nodes[0]) if nodes else HuffmanTree(None)  # Создание дерева с корневым узлом
+
+text = input("Введите текст: ")  # Ввод текста от пользователя
+huffman_tree = build_huffman_tree(text)  # Построение дерева Хаффмана
+huffman_tree.print_tree()
+huffman_tree.print_tre(huffman_tree.root, 0)  # Вывод дерева в консоли
+
