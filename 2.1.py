@@ -8,32 +8,32 @@ class Node:
 
 class HuffmanTree:
     def __init__(self, root):
-        self.root = root  # Корневой узел дерева
+        self.root = root 
 
     def print_tree(self):
-        self.print_codes(self.root, '')  # Печать кодов Хаффмана
+        self.print_codes(self.root, '') 
 
     def print_codes(self, node, code):
         if node is None:
             return
         if node.char is not None:
-            print(f"'{node.char}': {code}")  # Печать символа и его кода
-        self.print_codes(node.left, code + '0')  # Рекурсивный обход левого поддерева
-        self.print_codes(node.right, code + '1')  # Рекурсивный обход правого поддерева
+            print(f"'{node.char}': {code}")  
+        self.print_codes(node.left, code + '0')  
+        self.print_codes(node.right, code + '1') 
 
     def print_tre(self, node, h):
         if node:
-            self.print_tre(node.right, h+1)  # Рекурсивный обход правого поддерева
+            self.print_tre(node.right, h+1)  # с увеличением уровня глубины
             for i in range(1, h+1):
-                print('    ', end='')  # Добавление отступов для визуализации уровня
+                print('    ', end='') 
             if node.char is not None:
-                print(f"'{node.char}':{node.freq}")  # Печать листового узла
+                print(f"'{node.char}':{node.freq}")  # листовой узел
             else:
-                print(node.freq)  # Печать внутреннего узла
-            self.print_tre(node.left, h+1)  # Рекурсивный обход левого поддерева
+                print(node.freq)  # внутренний узел
+            self.print_tre(node.left, h+1)  
 
 def build_huffman_tree(text):
-    freq = {}  # Словарь для подсчета частот символов
+    freq = {}  
     for char in text:
         if char != ' ':  # Игнорирование пробелов
             freq[char] = freq.get(char, 0) + 1  # Увеличение счетчика частоты
@@ -49,10 +49,10 @@ def build_huffman_tree(text):
                     nodes[j], nodes[j + 1] = nodes[j + 1], nodes[j]  # Сортировка пузырьком
 
         left = nodes.pop(0)  # Извлечение узла с наименьшей частотой
-        right = nodes.pop(0)  # Извлечение узла со следующей наименьшей частотой
-        parent = Node(None, left.freq + right.freq)  # Создание родительского узла
-        parent.left = left  # Установка левого потомка
-        parent.right = right  # Установка правого потомка
+        right = nodes.pop(0)  # со следующей частотой
+        parent = Node(None, left.freq + right.freq)  
+        parent.left = left  
+        parent.right = right  
         nodes.append(parent)  # Добавление родительского узла обратно в список
 
     return HuffmanTree(nodes[0]) if nodes else HuffmanTree(None)  # Создание дерева с корневым узлом
