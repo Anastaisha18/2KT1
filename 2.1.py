@@ -25,9 +25,9 @@ class HuffmanTree:
         if node:
             self.print_tre(node.right, h+1)  # с увеличением уровня глубины
             for i in range(1, h+1):
-                print('    ', end='') 
-            if node.char is not None:
-                print(f"'{node.char}':{node.freq}")  # листовой узел
+                print('    ', end='')  
+            if node.char is not None: # листовой узел
+                print(f"'{node.char}':{node.freq}")  
             else:
                 print(node.freq)  # внутренний узел
             self.print_tre(node.left, h+1)  
